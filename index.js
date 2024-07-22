@@ -15,11 +15,18 @@ function createEmployeeRecords(arrays) {
     return arrays.map(array => createEmployeeRecord(array))
 }
 
-function checkTimeValidity(timeStamp) {
-    const format = 
+function checkFormatValidity(timeStamp) {
+    const regex = /^\d{4}-\d{2}-\d{2} \d{4}$/;
+    return regex.test(timeStamp)
+}
+function parseTimeStamp(timeStamp) {
+    if (!checkFormatValidity(timeStamp)) {
+        throw new Error('Invalid date stamp format. Expected "YYYY-MM-DD HHMM"')
+    }
 }
 //Function3
 function createTimeInEvent(employeeRecord, dateStamp) {
+    parseTimeStamp(dateStamp);
     let [date, hour] = dateStamp.split(' ');
     employeeRecord.timeInEvents.push({
         type: 'TimeIn',
@@ -31,6 +38,7 @@ function createTimeInEvent(employeeRecord, dateStamp) {
 
 //Function4
 function createTimeOutEvent(employeeRecord, dateStamp) {
+    parseTimeStamp(dateStamp);
     let [date, hour] = dateStamp.split(' ');
     employeeRecord.timeOutEvents.push({
         type: 'TimeOut',
@@ -46,13 +54,17 @@ function hoursWorkedOnDate(employeeRecord, date) {
     const timeOutEvent = employeeRecord.timeOutEvents.find(event => event.date === date)
 
     if (!timeInEvent || !timeOutEvent) {
-        console.error(`No matching events found for date ${date}`)
+        throw new Error(`No matching events found for date ${date}`)
     }
 
     const timeIn = timeInEvent.hour;
     const timeOut = timeOutEvent.hour;
 
     const hoursWorked = (timeOut - timeIn) / 100
+
+    if (hoursWorked < 0) {
+        throw new Error(`Invalid time range for date: ${date}`)
+    }
 
     return hoursWorked
 }
